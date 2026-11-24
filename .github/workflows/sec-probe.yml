@@ -1,0 +1,22 @@
+# PREPARED ONLY. Deploy only after owner approval and verification of a NEW
+# isolated PUBLIC repository. Never copy to the private valuation repositories.
+name: V3 Pb11 SEC read-only proof
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v3-pb11-single-probe
+  cancel-in-progress: false
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Offline regression
+        run: python3 -m unittest -v
+      - name: One public SEC read
+        env:
+          SEC_CONTACT_EMAIL: ${{ secrets.SEC_CONTACT_EMAIL }}
+        run: python3 sec_adbe_probe.py --live
