@@ -76,6 +76,19 @@ class TestExtractor(unittest.TestCase):
     def test_name(self):
         self.p['entityName'] = 'Another company'
         with self.assertRaises(ValueError): evaluate(self.p)
+    def test_adobe_debt_balance_sheet_tags(self):
+        for key, tag in [('current_debt_2026_08_28', 'DebtCurrent'), ('noncurrent_debt_2026_08_28', 'LongTermDebt')]:
+            self.assertEqual(SPECS[key][0], (tag,))
+            self.assertEqual(evaluate(self.p)['fields'][key]['status'], 'EXTRACTED')
+    def test_debt_wrong_tag_not_substituted(self):
+        for key, wrong in [('current_debt_2026_08_28', 'LongTermDebtCurrent'), ('noncurrent_debt_2026_08_28', 'LongTermDebtNoncurrent')]:
+            tag = SPECS[key][0][0]
+            self.p['facts']['us-gaap'][wrong] = self.p['facts']['us-gaap'].pop(tag)
+            self.assertEqual(evaluate(self.p)['fields'][key]['status'], 'MISSING')
+    def test_debt_does_not_use_other_period(self):
+        for key in ('current_debt_2026_08_28', 'noncurrent_debt_2026_08_28'):
+            rows(self.p, key)[0]['end'] = '2025-11-28'
+            self.assertEqual(evaluate(self.p)['fields'][key]['status'], 'MISSING')
     def test_shares_positive(self):
         rows(self.p, 'diluted_weighted_average_shares_q3_2026')[0]['val'] = 0
         self.assertEqual(evaluate(self.p)['fields']['diluted_weighted_average_shares_q3_2026']['status'], 'INVALID')

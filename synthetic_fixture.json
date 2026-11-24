@@ -89,7 +89,7 @@
           ]
         }
       },
-      "LongTermDebtCurrent": {
+      "DebtCurrent": {
         "units": {
           "USD": [
             {
@@ -102,7 +102,7 @@
           ]
         }
       },
-      "LongTermDebtNoncurrent": {
+      "LongTermDebt": {
         "units": {
           "USD": [
             {

@@ -33,8 +33,8 @@ SPECS = {
     'ebit_9m_2025': (EBIT, Q, '2024-11-30', '2025-08-29', 'USD'),
     'cash_2026_08_28': (('CashAndCashEquivalentsAtCarryingValue',), Q, None, '2026-08-28', 'USD'),
     'short_term_investments_2026_08_28': (('ShortTermInvestments', 'ShortTermInvestmentsAvailableForSale', 'AvailableForSaleSecuritiesCurrent', 'MarketableSecuritiesCurrent'), Q, None, '2026-08-28', 'USD'),
-    'current_debt_2026_08_28': (('LongTermDebtCurrent',), Q, None, '2026-08-28', 'USD'),
-    'noncurrent_debt_2026_08_28': (('LongTermDebtNoncurrent',), Q, None, '2026-08-28', 'USD'),
+    'current_debt_2026_08_28': (('DebtCurrent',), Q, None, '2026-08-28', 'USD'),
+    'noncurrent_debt_2026_08_28': (('LongTermDebt',), Q, None, '2026-08-28', 'USD'),
     'diluted_weighted_average_shares_q3_2026': (('WeightedAverageNumberOfDilutedSharesOutstanding',), Q, '2026-05-30', '2026-08-28', 'shares'),
 }
 
