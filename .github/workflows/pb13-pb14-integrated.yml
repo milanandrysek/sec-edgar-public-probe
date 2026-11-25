@@ -1,0 +1,31 @@
+# INACTIVE CANDIDATE. Deploy only after separate owner approval, one run only.
+name: V3 Pb13 Pb14 one-shot integrated source proof
+on:
+  push:
+    branches: [poc/pb13-pb14-integrated-20261125]
+    paths: [.github/workflows/pb13-pb14-integrated.yml]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Trigger identity
+        shell: bash
+        run: |
+          set -eu
+          test "$GITHUB_EVENT_NAME" = push
+          test "$GITHUB_REF" = refs/heads/poc/pb13-pb14-integrated-20261125
+          test "$GITHUB_RUN_ATTEMPT" = 1
+          printf 'V3_PB13_PB14_TRIGGER_OK sha=%s run=%s attempt=%s\n' "$GITHUB_SHA" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT"
+      - uses: actions/checkout@v4
+        with:
+          ref: fcfc3e09973b47c0fa57b8e01699a061876f0354
+          persist-credentials: false
+      - name: Offline regression
+        run: python3 -m unittest -v
+      - name: One public SEC read
+        env:
+          SEC_CONTACT_EMAIL: ${{ secrets.SEC_CONTACT_EMAIL }}
+        run: python3 sec_adbe_probe.py --live
