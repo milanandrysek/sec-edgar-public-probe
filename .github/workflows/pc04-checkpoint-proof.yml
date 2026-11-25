@@ -1,0 +1,35 @@
+name: V3 Pc04 synthetic checkpoint proof
+on:
+  push:
+    branches: [poc/pc04-recovery-20261125]
+    paths: [.github/workflows/pc04-checkpoint-proof.yml]
+permissions: {}
+jobs:
+  checkpoint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Save first two synthetic items
+        shell: bash
+        run: |
+          set -eu
+          python3 - <<'PY'
+          import os, json, hashlib, pathlib
+          q = [2, 3, 5, 7]
+          p = {"marker":"V3_PC04","stage":"PARTIAL","queue":q,"done":[{"n":n,"square":n*n} for n in q[:2]],"source_run":os.environ["GITHUB_RUN_ID"],"source_sha":os.environ["GITHUB_SHA"],"attempt":os.environ["GITHUB_RUN_ATTEMPT"]}
+          raw = (json.dumps(p, sort_keys=True, separators=(",",":"))+"\n").encode()
+          pathlib.Path("checkpoint.json").write_bytes(raw)
+          print("V3_PC04_CHECKPOINT_SHA256="+hashlib.sha256(raw).hexdigest())
+          print("V3_PC04_CHECKPOINT="+raw.decode().strip())
+          PY
+      - name: Persist checkpoint
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-pc04-checkpoint
+          path: checkpoint.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Intentional interruption after persistence
+        run: |
+          echo V3_PC04_INTENTIONAL_STOP
+          exit 17
