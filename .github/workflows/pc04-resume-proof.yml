@@ -1,0 +1,58 @@
+name: V3 Pc04 synthetic resume proof
+on:
+  push:
+    branches: [poc/pc04-recovery-20261125]
+    paths: [.github/workflows/pc04-resume-proof.yml]
+permissions:
+  actions: read
+jobs:
+  resume:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Read immutable checkpoint from failed run
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          repository: milanandrysek/sec-edgar-public-probe
+          run-id: 45590044022
+          artifact-ids: 15010128689
+          path: recovered
+      - name: Verify checkpoint and finish only pending items
+        shell: bash
+        run: |
+          set -eu
+          python3 - <<'PY'
+          import pathlib, json, hashlib, os
+          src = pathlib.Path("recovered/checkpoint.json")
+          raw = src.read_bytes()
+          assert hashlib.sha256(raw).hexdigest() == "e48905e3b10e2ca5d0476d6b79eed7c5e5492692d1c78fb9e6e365d28177496c"
+          p = json.loads(raw)
+          assert p == {"attempt":"1","done":[{"n":2,"square":4},{"n":3,"square":9}],"marker":"V3_PC04","queue":[2,3,5,7],"source_run":"45590044022","source_sha":"e8acfcf36a7ac89653089406bdc0c01d6f70f62e","stage":"PARTIAL"}
+          assert os.environ["GITHUB_RUN_ID"] != p["source_run"]
+          seen = {row["n"] for row in p["done"]}
+          new = []
+          for n in p["queue"]:
+              if n not in seen:
+                  new.append(n)
+                  p["done"].append({"n":n,"square":n*n})
+                  seen.add(n)
+          assert new == [5,7]
+          assert p["done"] == [{"n":n,"square":n*n} for n in p["queue"]]
+          assert src.read_bytes() == raw
+          p["stage"] = "COMPLETE"
+          p["resume_run"] = os.environ["GITHUB_RUN_ID"]
+          p["newly_processed"] = new
+          final = (json.dumps(p,sort_keys=True,separators=(",",":"))+"\n").encode()
+          pathlib.Path("completed.json").write_bytes(final)
+          print("V3_PC04_RESUME_SHA256="+hashlib.sha256(final).hexdigest())
+          print("V3_PC04_RESUME="+final.decode().strip())
+          print("V3_PC04_RESUME_OK new=2 total=4 duplicates=0")
+          PY
+      - name: Persist completed result
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-pc04-complete
+          path: completed.json
+          if-no-files-found: error
+          retention-days: 7
