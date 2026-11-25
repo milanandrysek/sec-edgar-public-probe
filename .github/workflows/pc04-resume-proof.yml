@@ -24,7 +24,7 @@ jobs:
           set -eu
           python3 - <<'PY'
           import pathlib, json, hashlib, os
-          src = pathlib.Path("recovered/checkpoint.json")
+          src = pathlib.Path("recovered/v3-pc04-checkpoint/checkpoint.json")
           raw = src.read_bytes()
           assert hashlib.sha256(raw).hexdigest() == "e48905e3b10e2ca5d0476d6b79eed7c5e5492692d1c78fb9e6e365d28177496c"
           p = json.loads(raw)
