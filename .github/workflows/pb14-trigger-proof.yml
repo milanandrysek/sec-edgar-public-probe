@@ -1,0 +1,20 @@
+name: V3 Pb14 one-shot synthetic trigger
+on:
+  push:
+    branches:
+      - poc/pb14-trigger-20261125
+    paths:
+      - .github/workflows/pb14-trigger-proof.yml
+permissions: {}
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Synthetic proof only
+        shell: bash
+        run: |
+          set -eu
+          test "$GITHUB_EVENT_NAME" = push
+          test "$GITHUB_REF" = refs/heads/poc/pb14-trigger-20261125
+          printf 'V3_PB14_TRIGGER_OK sha=%s run=%s attempt=%s\n' "$GITHUB_SHA" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT"
